@@ -3,6 +3,6 @@
 
 #include "automaton.h"
 
-Automaton *make_epsilon_nfa(char *pattern);
+Automaton *make_epsilon_nfa(const char *pattern);
 
 #endif //__MAKE_EPSILON_NFA_H__

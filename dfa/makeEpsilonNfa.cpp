@@ -15,76 +15,61 @@ struct Data{
 /* 再帰下降法 */
 // char *p = str; res = expr(p);
 
-Data term(char* &s);
-Data character(char* &s);
-Data factor(char* &s);
-Data expr(char* &s);
+Data term(const char* &s);
+Data character(const char* &s);
+Data factor(const char* &s);
+Data expr(const char* &s);
 
 Data star(Data data){
   Data newData;
-
+  
   newData.start = new Automaton;
   newData.end = new Automaton;
 
   newData.start->addEdge(getId(Epsilon), newData.end);
   newData.start->addEdge(getId(Epsilon), data.start);
   data.end->addEdge(getId(Epsilon), data.start);
+  data.end->addEdge(getId(Epsilon), newData.end);
   
   return newData;
 }
 
 //文字
-Data character(char* &s){
-  assert(isalpha(s[0]));
+Data character(const char* &s){
+  assert(isCharacter(s[0]));
   Data res;
-
-  res.start = res.end = new Automaton;
-
-  while(isalpha(s[0])){
-    Data data;
-    data.start = new Automaton;
-    data.end = new Automaton;
-    data.start->addEdge(getId(s[0]), data.end);
+  
+  res.start = new Automaton;
+  res.end = new Automaton;
+  res.start->addEdge(getId(s[0]), res.end);
+  s++;
+  
+  if(s[0] == '*'){
+    res = star(res);
     s++;
-    
-    if(s[1] == '*'){
-      data = star(data);
-      s++;
-    }
-    
-    res.end->addEdge(getId(Epsilon), data.start);
-    res.end = data.end;
   }
   
   return res;
 }
 
 //乗算除算(優先順位:高)
-Data term(char* &s){
-  Data res, data;
+Data term(const char* &s){
+  Data res = factor(s);
 
-  res.start = new Automaton;
-  res.end = new Automaton;
-  
-  data = factor(s);
-  res.start->addEdge(getId(Epsilon), data.start);
-  data.end->addEdge(getId(Epsilon), res.end);
-  
   while(1){
-    if(*s == '|'){
-      data = factor(++s);
-      res.start->addEdge(getId(Epsilon), data.start);
-      data.end->addEdge(getId(Epsilon), res.end);
-    } else {
+    if(isCharacter(*s) || *s == '('){
+      Data data = factor(s);
+      res.end->addEdge(getId(Epsilon), data.start);
+      res.end = data.end;
+    }else{
       break;
     }
   }
-  
   return res;
 }
 
 //括弧か数
-Data factor(char* &s){
+Data factor(const char* &s){
   if(*s != '(') return character(s);
   Data res = expr(++s); s++;
 
@@ -97,12 +82,29 @@ Data factor(char* &s){
 }
 
 //式(優先順位: 低)
-Data expr(char* &s){
-  Data res = term(s);
+Data expr(const char* &s){
+  Data res, data;
+
+  res.start = new Automaton;
+  res.end = new Automaton;
+  
+  data = term(s);
+  res.start->addEdge(getId(Epsilon), data.start);
+  data.end->addEdge(getId(Epsilon), res.end);
+  
+  while(1){
+    if(*s == '|') {
+      data = term(++s);
+      res.start->addEdge(getId(Epsilon), data.start);
+      data.end->addEdge(getId(Epsilon), res.end);
+    }else{
+      break;
+    }
+  }
   return res;
 }
 
-Automaton *make_epsilon_nfa(char *pattern) {
+Automaton *make_epsilon_nfa(const char *pattern) {
   Data data = expr(pattern);
   data.end->endState = true;
 

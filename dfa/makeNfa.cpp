@@ -29,15 +29,17 @@ Automaton *make_nfa(Automaton* ep_nfa){
   }
 
   bool dp[incrementId][incrementId][N];
+  bool used[incrementId];
   memset(dp, 0, sizeof(dp));
+  memset(used, 0, sizeof(used));
 
   for(int i=0;i<incrementId;i++) dp[i][i][getId(Epsilon)] = true;
   
   que.push(ep_nfa);
   while(que.size()){
     auto p = que.front(); que.pop();
-    if(p && dic.find(p) == dic.end()){
-      dic[p] = incrementId++;
+    if(p && !used[dic[p]]){
+      used[dic[p]] = true;
       for(int i=0;i<N;i++){
         for(int j=0;j<p->nextNodes[i].size();j++){
           if(p->nextNodes[i][j] != NULL) {
@@ -48,8 +50,7 @@ Automaton *make_nfa(Automaton* ep_nfa){
       }
     }
   }
-
-
+  
   for(int k=0;k<incrementId;k++){
     for(int i=0;i<incrementId;i++){
       for(int j=0;j<incrementId;j++){
@@ -63,17 +64,15 @@ Automaton *make_nfa(Automaton* ep_nfa){
 
   for(int i=0;i<incrementId;i++){
     for(int j=0;j<N;j++){
-      nodeList[i]->nextNodes[i].resize(0);
+      nodeList[i]->nextNodes[j].resize(0);
 
-      if(i != getId(Epsilon)){
+      if(j != getId(Epsilon)){
         for(int k=0;k<incrementId;k++){
           if(dp[i][k][j]) nodeList[i]->addEdge(j, nodeList[k]);
         }
       }
     }
   }
-
-  fprintf(stderr, "N = %d\n", incrementId);
   
   return ep_nfa;
 }

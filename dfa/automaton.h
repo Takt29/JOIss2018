@@ -5,11 +5,11 @@
 #include <cassert>
 #include <vector>
 
-#define N 53 //a-zA-Zep
+#define N 55 //a-zA-Zep^$
 #define Epsilon -1
 
 struct Automaton{
-  std::vector<Automaton*> nextNodes[26*2 + 1]; // a-zA-Zep
+  std::vector<Automaton*> nextNodes[N]; // a-zA-Zep
   bool endState;
 
   Automaton();
@@ -17,6 +17,7 @@ struct Automaton{
   void addEdge(int charId, Automaton *next);
 };
 
+int isCharacter(char c);
 int getId(char c);
 
 #endif //__AUTOMATON_H__
