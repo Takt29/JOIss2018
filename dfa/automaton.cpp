@@ -17,7 +17,7 @@ int isCharacter(char c){
 int getId(char c){
   if(c == Epsilon) return 0;
   if(islower(c)) return c - 'a' + 1;
-  if(isupper(c)) return c - 'A' + 1;
+  if(isupper(c)) return c - 'A' + 1 + 26;
   if(c == '^') return 1 + 26 * 2;
   if(c == '$') return 2 + 26 * 2;
   
