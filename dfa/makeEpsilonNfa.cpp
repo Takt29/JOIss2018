@@ -35,6 +35,20 @@ Data star(Data data){
   return newData;
 }
 
+Data plus_(Data data){
+  Data newData;
+  
+  newData.start = new Automaton;
+  newData.end = new Automaton;
+
+  //newData.start->addEdge(getId(Epsilon), newData.end);
+  newData.start->addEdge(getId(Epsilon), data.start);
+  data.end->addEdge(getId(Epsilon), data.start);
+  data.end->addEdge(getId(Epsilon), newData.end);
+  
+  return newData;
+}
+
 Data question(Data data){
   data.start->addEdge(getId(Epsilon), data.end);
   return data;
@@ -58,6 +72,11 @@ Data character(const char* &s){
   
   if(s[0] == '*'){
     res = star(res);
+    s++;
+  }
+
+  if(s[0] == '+'){
+    res = plus_(res);
     s++;
   }
 
@@ -121,6 +140,11 @@ Data factor(const char* &s){
     s++;
   }
 
+  if(s[0] == '+'){
+    res = plus_(res);
+    s++;
+  }
+  
   if(s[0] == '?'){
     res = question(res);
     s++;
