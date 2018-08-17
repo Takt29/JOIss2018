@@ -87,11 +87,7 @@ Data bracket(const char* &s){
     }
 
     for(char i=l;i<=r;i++){
-      data.start = new Automaton;
-      data.end = new Automaton;
-      data.start->addEdge(getId(i), data.end);
-      res.start->addEdge(getId(Epsilon), data.start);
-      data.end->addEdge(getId(Epsilon), res.end);
+      res.start->addEdge(getId(i), res.end);
     }
   }
 
