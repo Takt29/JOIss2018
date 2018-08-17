@@ -19,6 +19,7 @@ Data term(const char* &s);
 Data character(const char* &s);
 Data factor(const char* &s);
 Data expr(const char* &s);
+Data bracket(const char* &s);
 
 Data star(Data data){
   Data newData;
@@ -34,21 +35,67 @@ Data star(Data data){
   return newData;
 }
 
+Data question(Data data){
+  data.start->addEdge(getId(Epsilon), data.end);
+  return data;
+}
+
 //文字
 Data character(const char* &s){
-  assert(isCharacter(s[0]));
   Data res;
+
+  if(s[0] == '['){
+    res = bracket(++s);
+    s++;
+  }else{
+    assert(isCharacter(s[0]));
   
-  res.start = new Automaton;
-  res.end = new Automaton;
-  res.start->addEdge(getId(s[0]), res.end);
-  s++;
+    res.start = new Automaton;
+    res.end = new Automaton;
+    res.start->addEdge(getId(s[0]), res.end);
+    s++;
+  }
   
   if(s[0] == '*'){
     res = star(res);
     s++;
   }
+
+  if(s[0] == '?'){
+    res = question(res);
+    s++;
+  }
   
+  return res;
+}
+
+//角括弧[a-z]
+Data bracket(const char* &s){
+  Data res, data;
+
+  res.start = new Automaton;
+  res.end = new Automaton;
+
+  while(isCharacter(s[0])){
+    char l = s[0], r;
+    if(s[1] == '-' && s[2] != ']'){
+      r = s[2];
+      s += 3;
+    }else{
+      r = s[0];
+      s++;
+    }
+
+    for(char i=l;i<=r;i++){
+      data.start = new Automaton;
+      data.end = new Automaton;
+      data.start->addEdge(getId(i), data.end);
+      res.start->addEdge(getId(Epsilon), data.start);
+      data.end->addEdge(getId(Epsilon), res.end);
+    }
+  }
+
+  assert(s[0] == ']');
   return res;
 }
 
@@ -57,7 +104,7 @@ Data term(const char* &s){
   Data res = factor(s);
 
   while(1){
-    if(isCharacter(*s) || *s == '('){
+    if(isCharacter(*s) || *s == '(' || *s == '['){
       Data data = factor(s);
       res.end->addEdge(getId(Epsilon), data.start);
       res.end = data.end;
@@ -75,6 +122,11 @@ Data factor(const char* &s){
 
   if(s[0] == '*'){
     res = star(res);
+    s++;
+  }
+
+  if(s[0] == '?'){
+    res = question(res);
     s++;
   }
   
